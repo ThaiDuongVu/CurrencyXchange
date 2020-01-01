@@ -118,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
                     toCurrency = currencies[position];
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
@@ -138,23 +137,19 @@ public class MainActivity extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(this);
     }
 
-    @SuppressLint("SetTextI18n")
-    public void onConvertButtonClicked(View view) {
-        double inputNumber = Double.parseDouble(inputEditText.getText().toString());
-        exchangedCurrency(inputNumber, fromCurrency, toCurrency);
-        rateNumberTextView.setText(Double.toString(rateNumber));
-    }
-
-    private void exchangedCurrency(final double input, String from, final String to) {
+    private void exchangeCurrency(final double input, String from, final String to) {
         String url = "https://api.exchangerate-api.com/v4/latest/" + from;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
                             JSONObject rates = response.getJSONObject("rates");
                             rateNumber = input * rates.getDouble(to);
+                            rateNumberTextView.setText(Double.toString(rateNumber));
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -167,5 +162,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         requestQueue.add(request);
+    }
+    
+    public void onConvertButtonClicked(View view) {
+        double inputNumber = Double.parseDouble(inputEditText.getText().toString());
+        exchangeCurrency(inputNumber, fromCurrency, toCurrency);
     }
 }
