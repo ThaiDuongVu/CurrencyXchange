@@ -2,21 +2,29 @@ package com.thaiduong.currencyxchange;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
-
-    private ArrayList<String> currencyList = new ArrayList<>();
-
-    private Spinner fromSpinner;
-    private Spinner toSpinner;
 
     private String[] currencies = {
             "USD",
@@ -72,6 +80,20 @@ public class MainActivity extends AppCompatActivity {
             "VND",
             "ZAR"
     };
+    private ArrayList<String> currencyList = new ArrayList<>();
+
+    private Spinner fromSpinner;
+    private Spinner toSpinner;
+
+    private String fromCurrency = "";
+    private String toCurrency = "";
+
+    private EditText inputEditText;
+    private double rateNumber;
+
+    private TextView rateNumberTextView;
+
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,13 +106,17 @@ public class MainActivity extends AppCompatActivity {
         spinnerHandler(toSpinner);
     }
 
-    private void spinnerHandler(Spinner spinner) {
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, currencyList);
+    private void spinnerHandler(final Spinner spinner) {
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, currencyList);
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
+                if (spinner == fromSpinner) {
+                    fromCurrency = currencies[position];
+                } else {
+                    toCurrency = currencies[position];
+                }
             }
 
             @Override
@@ -101,8 +127,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialize() {
+        currencyList.addAll(Arrays.asList(currencies));
+
         fromSpinner = findViewById(R.id.fromSpinner);
         toSpinner = findViewById(R.id.toSpinner);
-        currencyList.addAll(Arrays.asList(currencies));
+
+        inputEditText = findViewById(R.id.inputEditText);
+        rateNumberTextView = findViewById(R.id.rateNumberTextView);
+
+        requestQueue = Volley.newRequestQueue(this);
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onConvertButtonClicked(View view) {
+        double inputNumber = Double.parseDouble(inputEditText.getText().toString());
+        exchangedCurrency(inputNumber, fromCurrency, toCurrency);
+        rateNumberTextView.setText(Double.toString(rateNumber));
+    }
+
+    private void exchangedCurrency(final double input, String from, final String to) {
+        String url = "https://api.exchangerate-api.com/v4/latest/" + from;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONObject rates = response.getJSONObject("rates");
+                            rateNumber = input * rates.getDouble(to);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+        requestQueue.add(request);
     }
 }
