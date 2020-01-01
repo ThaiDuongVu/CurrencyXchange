@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -163,9 +164,13 @@ public class MainActivity extends AppCompatActivity {
                 });
         requestQueue.add(request);
     }
-    
+
     public void onConvertButtonClicked(View view) {
-        double inputNumber = Double.parseDouble(inputEditText.getText().toString());
-        exchangeCurrency(inputNumber, fromCurrency, toCurrency);
+        if (inputEditText.getText().length() == 0) {
+            Toast.makeText(this, "Please enter a value to exchange", Toast.LENGTH_SHORT).show();
+        } else {
+            double inputNumber = Double.parseDouble(inputEditText.getText().toString());
+            exchangeCurrency(inputNumber, fromCurrency, toCurrency);
+        }
     }
 }
