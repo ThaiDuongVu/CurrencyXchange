@@ -3,7 +3,9 @@ package com.thaiduong.currencyxchange;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -96,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
     private RequestQueue requestQueue;
 
+    private Vibrator vibrator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
         rateNumberTextView = findViewById(R.id.rateNumberTextView);
 
         requestQueue = Volley.newRequestQueue(this);
+
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     private void exchangeCurrency(final double input, String from, final String to) {
@@ -166,6 +172,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onConvertButtonClicked(View view) {
+        int vibratingDuration = 50;
+        vibrator.vibrate(vibratingDuration);
         if (inputEditText.getText().length() == 0) {
             Toast.makeText(this, "Please enter a value to exchange", Toast.LENGTH_SHORT).show();
         } else {
