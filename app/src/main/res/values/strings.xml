@@ -4,8 +4,8 @@
     <string name="from_text">From: </string>
     <string name="to_text">To: </string>
 
-    <string name="input_hint">How much to exchange</string>
-    <string name="rate_text">Rate: </string>
+    <string name="input_hint">💸 How much to exchange</string>
+    <string name="rate_text">💰 Rate: </string>
 
-    <string name="convert_button">Convert</string>
+    <string name="convert_button">🔄 Convert</string>
 </resources>

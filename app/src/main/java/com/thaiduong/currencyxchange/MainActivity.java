@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
 
     private Vibrator vibrator;
+    private int vibratingDuration = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +113,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void spinnerHandler(final Spinner spinner) {
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, currencyList);
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.custom_spinner, currencyList);
+        arrayAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown);
+
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -122,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     toCurrency = currencies[position];
                 }
+
+                vibrator.vibrate(vibratingDuration);
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -155,24 +160,24 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             JSONObject rates = response.getJSONObject("rates");
                             rateNumber = input * rates.getDouble(to);
-                            rateNumberTextView.setText(Double.toString(rateNumber));
+                            rateNumberTextView.setText(String.format("%.2f", rateNumber));
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
         requestQueue.add(request);
     }
 
     public void onConvertButtonClicked(View view) {
-        int vibratingDuration = 50;
         vibrator.vibrate(vibratingDuration);
         if (inputEditText.getText().length() == 0) {
             Toast.makeText(this, "Please enter a value to exchange", Toast.LENGTH_SHORT).show();
