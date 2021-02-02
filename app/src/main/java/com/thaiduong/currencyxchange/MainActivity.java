@@ -29,7 +29,8 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String[] currencies = {
+    // List of currencies
+    private final String[] currencies = {
             "USD",
             "AED",
             "ARS",
@@ -83,23 +84,28 @@ public class MainActivity extends AppCompatActivity {
             "VND",
             "ZAR"
     };
-    private ArrayList<String> currencyList = new ArrayList<>();
+    private final ArrayList<String> currencyList = new ArrayList<>();
 
+    // Spinners to select currencies to exchange
     private Spinner fromSpinner;
     private Spinner toSpinner;
 
+    // Currencies from & to exchange
     private String fromCurrency = "";
     private String toCurrency = "";
 
+    // Input amount to exchange
     private EditText inputEditText;
     private double rateNumber;
 
     private TextView rateNumberTextView;
 
+    // Request queue from API
     private RequestQueue requestQueue;
 
+    // Current device's vibrating functionality
     private Vibrator vibrator;
-    private int vibratingDuration = 50;
+    private final int vibratingDuration = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,11 +114,11 @@ public class MainActivity extends AppCompatActivity {
 
         initialize();
 
-        spinnerHandler(fromSpinner);
-        spinnerHandler(toSpinner);
+        handleSpinner(fromSpinner);
+        handleSpinner(toSpinner);
     }
 
-    private void spinnerHandler(final Spinner spinner) {
+    private void handleSpinner(final Spinner spinner) {
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.custom_spinner, currencyList);
         arrayAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown);
 
@@ -136,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialize() {
+        // Add all currencies to currency list
         currencyList.addAll(Arrays.asList(currencies));
 
         fromSpinner = findViewById(R.id.fromSpinner);
@@ -149,17 +156,19 @@ public class MainActivity extends AppCompatActivity {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    private void exchangeCurrency(final double input, String from, final String to) {
+    private void fetchData(final double input, String from, final String to) {
         String url = "https://api.exchangerate-api.com/v4/latest/" + from;
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+        JsonObjectRequest apiRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            JSONObject rates = response.getJSONObject("rates");
-                            rateNumber = input * rates.getDouble(to);
+                            JSONObject rateObject = response.getJSONObject("rates");
+                            // Get current currency rate
+                            rateNumber = input * rateObject.getDouble(to);
+                            // Update text view to display exchanged rate
                             rateNumberTextView.setText(String.format("%.2f", rateNumber));
 
                         } catch (JSONException e) {
@@ -174,7 +183,9 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
-        requestQueue.add(request);
+
+        // Add created request to request queue to start fetching.
+        requestQueue.add(apiRequest);
     }
 
     public void onConvertButtonClicked(View view) {
@@ -183,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Please enter a value to exchange", Toast.LENGTH_SHORT).show();
         } else {
             double inputNumber = Double.parseDouble(inputEditText.getText().toString());
-            exchangeCurrency(inputNumber, fromCurrency, toCurrency);
+            fetchData(inputNumber, fromCurrency, toCurrency);
         }
     }
 }
